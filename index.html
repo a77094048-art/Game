@@ -170,7 +170,7 @@
 </div>
 
 <script>
-    // ==================== رابط خادمك على Render ====================
+    // ==================== رابط الخادم الخاص بك ====================
     const SERVER_URL = 'wss://gamee-beqx.onrender.com';
 
     // ==================== 100 سؤال ====================
@@ -281,9 +281,9 @@
     // ==================== متغيرات عامة ====================
     let ws;
     let roomId;
-    let myRole = -1;
+    let myRole = -1;           // 0=حمودي (المضيف), 1=إيوته (الضيف)
     let scores = [0, 0];
-    let currentTurn = 0;
+    let currentTurn = 0;       // 0 للمضيف, 1 للضيف
     let currentIndex = 0;
     let shuffledQuestions = [];
     let selectedOptionIndex = null;
