@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>تحدي حمودي وإيوته 🔥</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -40,12 +39,13 @@
         .container {
             background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);
             border-radius: 35px; box-shadow: 0 25px 60px rgba(156,39,176,0.25);
-            padding: 25px 20px; max-width: 550px; width: 100%;
+            padding: 20px 18px; max-width: 580px; width: 100%;
             text-align: center; position: relative; z-index: 1;
             border: 1px solid rgba(255,255,255,0.6);
+            max-height: 95vh; overflow-y: auto;
         }
         h1 {
-            font-size: 2.5rem; font-weight: 900;
+            font-size: 2.2rem; font-weight: 900;
             background: linear-gradient(135deg, #c2185b, #7b1fa2);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text; margin-bottom: 10px;
@@ -53,51 +53,81 @@
         .score-board {
             display: flex; justify-content: space-around; align-items: center;
             background: rgba(255,255,255,0.8); border-radius: 60px;
-            padding: 15px 20px; margin: 15px 0;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid #f8bbd0;
+            padding: 12px 18px; margin: 12px 0;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05); border: 1px solid #f8bbd0;
         }
         .player-score { text-align: center; }
-        .player-score .name { font-weight: 700; color: #6a1b9a; font-size: 0.9rem; }
-        .player-score .points { font-size: 2rem; font-weight: 900; color: #ad1457; }
-        .vs { font-size: 1.2rem; font-weight: bold; color: #d81b60; }
-        .peer-area {
-            background: #fff0f5; border-radius: 20px; padding: 15px;
-            margin: 15px 0; font-size: 0.9rem;
+        .player-score .name { font-weight: 700; color: #6a1b9a; font-size: 0.85rem; }
+        .player-score .points { font-size: 1.8rem; font-weight: 900; color: #ad1457; }
+        .vs { font-size: 1.1rem; font-weight: bold; color: #d81b60; }
+        .challenge-bar {
+            display: flex; width: 100%; height: 18px; border-radius: 20px;
+            overflow: hidden; margin: 10px 0; background: #eee; border: 1px solid #ccc;
         }
-        .peer-area input {
-            padding: 10px; border-radius: 30px; border: 1px solid #e1bee7;
-            width: 60%; margin: 5px; font-family: inherit; text-align: center;
-        }
-        .peer-area button {
-            padding: 10px 20px; border-radius: 30px; border: none;
-            background: #9c27b0; color: white; font-weight: 700; cursor: pointer;
-            margin: 5px; font-family: inherit;
-        }
+        .host-bar { background: #0d47a1; width: 50%; transition: width 0.3s; }
+        .guest-bar { background: #e91e63; width: 50%; transition: width 0.3s; }
         .turn-indicator {
-            background: #fce4ec; border-radius: 40px; padding: 8px 20px;
-            margin: 10px 0; font-weight: 700; color: #c2185b; font-size: 1rem;
+            background: #fce4ec; border-radius: 40px; padding: 6px 18px;
+            margin: 8px 0; font-weight: 700; color: #c2185b; font-size: 0.95rem;
         }
         .question {
-            font-size: 1.3rem; font-weight: 700; color: #4a148c; margin: 15px 0;
-            background: #fce4ec; padding: 15px; border-radius: 25px;
+            font-size: 1.2rem; font-weight: 700; color: #4a148c; margin: 12px 0;
+            background: #fce4ec; padding: 12px; border-radius: 25px;
         }
-        .options { display: grid; gap: 10px; margin: 15px 0; }
+        .options { display: grid; gap: 8px; margin: 10px 0; }
         .option-btn {
-            background: white; border: 2px solid #e1bee7; padding: 14px;
-            border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s;
-            color: #4a148c; font-size: 1rem; font-family: inherit;
+            background: white; border: 2px solid #e1bee7; padding: 12px;
+            border-radius: 35px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            color: #4a148c; font-size: 0.95rem; font-family: inherit;
         }
         .option-btn:hover { background: #f3e5f5; border-color: #9c27b0; }
         .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .option-btn.selected {
+            background: #9c27b0; color: white; border-color: #7b1fa2;
+            box-shadow: 0 4px 10px rgba(156,39,176,0.4);
+        }
+        .confirm-btn {
+            background: #4caf50; color: white; border: none; padding: 12px;
+            border-radius: 35px; font-weight: 700; font-size: 1.1rem; cursor: pointer;
+            margin-top: 10px; width: 100%; transition: 0.2s; font-family: inherit;
+        }
+        .confirm-btn:disabled { background: #a5d6a7; cursor: not-allowed; }
         .feedback {
-            margin-top: 15px; font-weight: 700; min-height: 30px; font-size: 1.1rem;
+            margin-top: 12px; font-weight: 700; min-height: 25px; font-size: 1rem;
         }
         .reset-btn {
-            margin-top: 15px; background: #e91e63; color: white; border: none;
-            padding: 10px 30px; border-radius: 40px; font-weight: 700;
+            margin-top: 12px; background: #e91e63; color: white; border: none;
+            padding: 10px 25px; border-radius: 35px; font-weight: 700;
             cursor: pointer; font-size: 0.9rem; font-family: inherit;
         }
-        .status { font-size: 0.8rem; color: #666; margin: 5px 0; }
+        .chat-section {
+            margin-top: 15px; border-top: 1px solid #f0c0d0; padding-top: 10px;
+            text-align: right;
+        }
+        .chat-messages {
+            max-height: 120px; overflow-y: auto; background: #fff5f8;
+            border-radius: 15px; padding: 8px; margin-bottom: 5px; font-size: 0.85rem;
+        }
+        .chat-input-row { display: flex; gap: 5px; }
+        .chat-input-row input {
+            flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #e1bee7;
+            font-family: inherit; font-size: 0.85rem;
+        }
+        .chat-input-row button {
+            background: #9c27b0; color: white; border: none; border-radius: 20px;
+            padding: 8px 15px; font-family: inherit; font-weight: 600; cursor: pointer;
+        }
+        .join-area { margin: 15px 0; }
+        .join-area input {
+            padding: 10px; border-radius: 25px; border: 1px solid #e1bee7;
+            width: 70%; margin: 5px; font-family: inherit; text-align: center;
+        }
+        .join-area button {
+            padding: 10px 18px; border-radius: 25px; border: none;
+            background: #9c27b0; color: white; font-weight: 700; cursor: pointer;
+            margin: 5px; font-family: inherit;
+        }
+        .status { font-size: 0.8rem; color: #666; }
     </style>
 </head>
 <body>
@@ -105,35 +135,78 @@
 <div class="container">
     <h1>💖 تحدي حمودي وإيوته 💖</h1>
     <div class="score-board">
-        <div class="player-score">
-            <div class="name">🦅 حمودي</div>
-            <div class="points" id="myScore">0</div>
-        </div>
-        <div class="vs">⚔️ VS ⚔️</div>
-        <div class="player-score">
-            <div class="name">🌸 إيوته</div>
-            <div class="points" id="peerScore">0</div>
-        </div>
+        <div class="player-score"><div class="name">🦅 حمودي</div><div class="points" id="myScore">0</div></div>
+        <div class="vs">⚔️</div>
+        <div class="player-score"><div class="name">🌸 إيوته</div><div class="points" id="peerScore">0</div></div>
+    </div>
+    <div class="challenge-bar">
+        <div class="host-bar" id="hostBar" style="width:50%"></div>
+        <div class="guest-bar" id="guestBar" style="width:50%"></div>
     </div>
 
-    <div class="peer-area" id="peerArea">
-        <div>📱 معرف غرفتك: <strong id="myPeerId">-</strong></div>
-        <input type="text" id="remotePeerId" placeholder="أدخل معرف غرفة اللاعب الآخر هنا">
-        <button onclick="connectToPeer()">📞 انضم للغرفة</button>
-        <div class="status" id="statusText">في انتظار الاتصال...</div>
+    <div class="join-area" id="joinArea">
+        <div><input type="text" id="roomIdInput" placeholder="أدخل معرف الغرفة (أو اتركه فارغًا لإنشاء جديدة)"></div>
+        <button id="joinBtn">🚪 دخول / إنشاء الغرفة</button>
+        <div class="status" id="statusText">أدخل معرف الغرفة أو اتركه فارغًا لإنشاء غرفة جديدة</div>
     </div>
 
-    <div id="gameArea" style="display: none;">
+    <div id="gameArea" style="display:none;">
         <div class="turn-indicator" id="turnIndicator"></div>
         <div class="question" id="questionText"></div>
         <div class="options" id="optionsContainer"></div>
+        <button class="confirm-btn" id="confirmBtn" onclick="confirmAnswer()">تأكيد الإجابة</button>
         <div class="feedback" id="feedbackMsg"></div>
         <button class="reset-btn" onclick="resetGame()">🔄 إعادة اللعبة</button>
+
+        <div class="chat-section">
+            <div style="font-weight:700;color:#6a1b9a;margin-bottom:5px;">💬 دردشة</div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="اكتب رسالة...">
+                <button onclick="sendChat()">إرسال</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+    // ==================== رابط الخادم (استبدله برابط تطبيق Render الخاص بك) ====================
+    const SERVER_URL = 'wss://YOUR_RENDER_APP.onrender.com';
+
+    // ==================== 100 سؤال (سوريا + عامة) ====================
     const questions = [
+        // أسئلة عن سوريا (30)
+        { question: "ما هي عاصمة سوريا؟ 🇸🇾", options: ["دمشق", "حلب", "حمص", "اللاذقية"], correct: 0 },
+        { question: "كم عدد محافظات سوريا؟ 🗺️", options: ["12", "14", "13", "15"], correct: 1 },
+        { question: "أين يقع نهر الفرات في سوريا؟ 🌊", options: ["شرق", "غرب", "شمال", "جنوب"], correct: 0 },
+        { question: "ما هو أكبر مطار في سوريا؟ ✈️", options: ["مطار دمشق", "مطار حلب", "مطار اللاذقية", "مطار القامشلي"], correct: 0 },
+        { question: "متى تم إعلان استقلال سوريا؟ 🗓️", options: ["1945", "1946", "1948", "1950"], correct: 1 },
+        { question: "من هو أول رئيس لسوريا بعد الاستقلال؟ 👤", options: ["شكري القوتلي", "هاشم الأتاسي", "ناظم القدسي", "أمين الحافظ"], correct: 0 },
+        { question: "ما هي العملة الرسمية لسوريا؟ 💷", options: ["الليرة", "الدينار", "الريال", "الجنيه"], correct: 0 },
+        { question: "أي مدينة سورية تلقب بـ 'عاصمة الشهباء'؟ 🏙️", options: ["دمشق", "حلب", "حمص", "طرطوس"], correct: 1 },
+        { question: "ما هو الجبل الذي يطل على دمشق؟ ⛰️", options: ["جبل قاسيون", "جبل العرب", "جبل الأقرع", "جبل الشيخ"], correct: 0 },
+        { question: "من هو الشاعر السوري صاحب 'أغاني الحياة'؟ 📜", options: ["نزار قباني", "أدونيس", "محمد الماغوط", "عمر الفرا"], correct: 0 },
+        { question: "ما هي أكبر محافظة سورية من حيث المساحة؟ 🌍", options: ["حمص", "حلب", "دير الزور", "الرقة"], correct: 1 },
+        { question: "أين يوجد قصر الحير الشرقي الأثري؟ 🏰", options: ["تدمر", "الرقة", "البادية", "دمشق"], correct: 2 },
+        { question: "كم عدد السكان التقريبي لسوريا (قبل 2011)؟ 👥", options: ["17 مليون", "22 مليون", "27 مليون", "32 مليون"], correct: 1 },
+        { question: "ما اسم أول جامعة في سوريا؟ 🎓", options: ["جامعة دمشق", "جامعة حلب", "الجامعة السورية", "جامعة تشرين"], correct: 2 },
+        { question: "ما هي اللغة الرسمية في سوريا؟ 🗣️", options: ["العربية", "الكردية", "الآرامية", "الشركسية"], correct: 0 },
+        { question: "متى تأسست المملكة السورية العربية؟ 🏛️", options: ["1918", "1920", "1936", "1946"], correct: 1 },
+        { question: "أي بحر يحد سوريا من الغرب؟ 🌊", options: ["البحر الأحمر", "البحر الميت", "البحر الأبيض المتوسط", "بحر العرب"], correct: 2 },
+        { question: "ما هو أكبر سد في سوريا؟ 🚧", options: ["سد الفرات", "سد تشرين", "سد البعث", "سد الخالدين"], correct: 0 },
+        { question: "ما هو الاسم القديم لمدينة اللاذقية؟ 🏛️", options: ["أوغاريت", "جبلة", "راميتا", "اللاذقية"], correct: 2 },
+        { question: "من هو بطل سوريا في مسلسل 'باب الحارة'؟ 🎬", options: ["عباس النوري", "بسام كوسا", "جهاد سعد", "سامر المصري"], correct: 0 },
+        { question: "ما هي أكبر حديقة في دمشق؟ 🌳", options: ["حديقة تشرين", "حديقة الجاحظ", "حديقة السبكي", "حديقة الأسد"], correct: 0 },
+        { question: "كم عدد أبواب دمشق القديمة؟ 🚪", options: ["5", "7", "9", "12"], correct: 1 },
+        { question: "ما هو الجبل الذي يقع فيه 'قلعة الحصن'؟ 🏰", options: ["جبل قاسيون", "جبل العرب", "جبل الحلو", "جبال الساحل"], correct: 3 },
+        { question: "من هي أشهر مغنية سورية؟ 🎤", options: ["فايا يونان", "أصالة نصري", "ميادة الحناوي", "لينا شماميان"], correct: 1 },
+        { question: "ما هو الاسم القديم لسوريا؟ 📜", options: ["بلاد الشام", "آرام", "فينيقيا", "كل ما سبق"], correct: 3 },
+        { question: "في أي عام وقعت معركة ميسلون؟ ⚔️", options: ["1919", "1920", "1921", "1922"], correct: 1 },
+        { question: "ما هو مقر البرلمان السوري؟ 🏛️", options: ["دمشق", "حلب", "حمص", "اللاذقية"], correct: 0 },
+        { question: "من هو مخترع أول أبجدية في العالم (أوغاريت)؟ 📝", options: ["السومريون", "الكنعانيون", "الآراميون", "الفينيقيون"], correct: 1 },
+        { question: "ما هي المدينة السورية المشهورة بصناعة الصابون؟ 🧼", options: ["حلب", "دمشق", "حمص", "طرطوس"], correct: 0 },
+        { question: "كم عدد النجوم في علم سوريا الحالي؟ ⭐", options: ["1", "2", "3", "4"], correct: 1 },
+        // أسئلة عامة (70)
         { question: "عاصمة اليابان؟ 🇯🇵", options: ["طوكيو", "سول", "بكين", "بانكوك"], correct: 0 },
         { question: "عدد الكواكب في المجموعة الشمسية؟ 🌌", options: ["7", "8", "9", "10"], correct: 1 },
         { question: "مكتشف الجاذبية؟ 🍎", options: ["أينشتاين", "نيوتن", "تسلا", "جاليليو"], correct: 1 },
@@ -153,28 +226,143 @@
         { question: "أول رائد فضاء هبط على القمر؟ 🚀", options: ["يوري غاغارين", "نيل أرمسترونغ", "باز ألدرين", "جون غلين"], correct: 1 },
         { question: "أكبر دولة عربية مساحة؟ 🗺️", options: ["السعودية", "مصر", "الجزائر", "السودان"], correct: 2 },
         { question: "كم لوناً في قوس قزح؟ 🌈", options: ["5", "6", "7", "8"], correct: 2 },
-        { question: "كاتب (الجمهورية) من الفلاسفة؟ 🏛️", options: ["سقراط", "أفلاطون", "أرسطو", "فيثاغورس"], correct: 1 }
+        { question: "كاتب (الجمهورية) من الفلاسفة؟ 🏛️", options: ["سقراط", "أفلاطون", "أرسطو", "فيثاغورس"], correct: 1 },
+        { question: "ما هو البحر الذي يحد فلسطين من الغرب؟ 🌊", options: ["البحر الأحمر", "البحر الميت", "البحر الأبيض المتوسط", "بحر العرب"], correct: 2 },
+        { question: "أكبر قارة في العالم؟ 🗺️", options: ["أفريقيا", "آسيا", "أوروبا", "أمريكا الشمالية"], correct: 1 },
+        { question: "المعدن السائل عند درجة حرارة الغرفة؟ 💧", options: ["الرصاص", "الزئبق", "الذهب", "الفضة"], correct: 1 },
+        { question: "كم عدد الساعات في اليوم المريخي؟ ⏰", options: ["24h", "24.6h", "23h", "25h"], correct: 1 },
+        { question: "ما هي عاصمة أستراليا؟ 🇦🇺", options: ["سيدني", "ملبورن", "كانبرا", "بريزبن"], correct: 2 },
+        { question: "كم عدد أضلاع المكعب؟ 📦", options: ["6", "8", "10", "12"], correct: 3 },
+        { question: "ما هو الكوكب الأحمر؟ 🔴", options: ["المشتري", "المريخ", "زحل", "الزهرة"], correct: 1 },
+        { question: "الغاز الذي تستنشقه النباتات؟ 🌿", options: ["O2", "N2", "CO2", "H2"], correct: 2 },
+        { question: "من هو أول رئيس للولايات المتحدة؟ 👑", options: ["لينكولن", "واشنطن", "جيفرسون", "روزفلت"], correct: 1 },
+        { question: "ما هي عاصمة إيطاليا؟ 🇮🇹", options: ["روما", "ميلان", "نابولي", "فلورنسا"], correct: 0 },
+        { question: "في أي عام تم اكتشاف أمريكا؟ 🗓️", options: ["1492", "1500", "1485", "1510"], correct: 0 },
+        { question: "كم عدد دول أوروبا؟ 🌍", options: ["44", "50", "47", "40"], correct: 0 },
+        { question: "ما هو الحيوان الذي ينام وإحدى عينيه مفتوحة؟ 🐬", options: ["الدولفين", "الأسد", "البطة", "الضفدع"], correct: 0 },
+        { question: "أصغر دولة في العالم؟ 🏳️", options: ["موناكو", "الفاتيكان", "ناورو", "سان مارينو"], correct: 1 },
+        { question: "عدد عظام جسم الإنسان البالغ؟ 🦴", options: ["206", "195", "215", "186"], correct: 0 },
+        { question: "أول فيلم رسوم متحركة طويل من ديزني؟ 🎬", options: ["سنو وايت", "سندريلا", "الأسد الملك", "بامبي"], correct: 0 },
+        { question: "ما هو المعدن الأكثر صلادة؟ 💎", options: ["الحديد", "الألماس", "التيتانيوم", "البلاتين"], correct: 1 },
+        { question: "كم يبلغ طول الأمعاء الدقيقة في الإنسان؟ 📏", options: ["3-4 م", "5-6 م", "6-7 م", "8-9 م"], correct: 2 },
+        { question: "ما هي سرعة الضوء؟ 💡", options: ["300,000 كم/ث", "150,000 كم/ث", "400,000 كم/ث", "1,000,000 كم/ث"], correct: 0 },
+        { question: "من هو النبي الذي ألقي في النار؟ 🔥", options: ["إبراهيم", "موسى", "عيسى", "نوح"], correct: 0 },
+        { question: "كم عدد أسنان الإنسان البالغ؟ 🦷", options: ["28", "32", "36", "30"], correct: 1 },
+        { question: "أكبر محيط في العالم؟ 🌊", options: ["الهادئ", "الأطلسي", "الهندي", "المتجمد الشمالي"], correct: 0 },
+        { question: "كم قلباً للأخطبوط؟ 🐙", options: ["1", "2", "3", "4"], correct: 2 },
+        { question: "ما هي عاصمة الأرجنتين؟ 🇦🇷", options: ["بوينس آيرس", "سانتياغو", "ليما", "برازيليا"], correct: 0 },
+        { question: "كم عدد ألوان علم جنوب إفريقيا؟ 🇿🇦", options: ["4", "5", "6", "7"], correct: 2 },
+        { question: "ما هو أكبر كائن حي على وجه الأرض؟ 🐋", options: ["الحوت الأزرق", "الفيل", "الزرافة", "الحبار العملاق"], correct: 0 },
+        { question: "من اخترع الهاتف؟ ☎️", options: ["بيل", "تيسلا", "إديسون", "ماركوني"], correct: 0 },
+        { question: "أي لون ينتج عن مزج الأزرق والأصفر؟ 🎨", options: ["الأخضر", "البرتقالي", "البنفسجي", "البني"], correct: 0 },
+        { question: "كم عدد سور القرآن الكريم؟ 📖", options: ["100", "114", "120", "99"], correct: 1 },
+        { question: "ما هي عاصمة إسبانيا؟ 🇪🇸", options: ["برشلونة", "مدريد", "فالنسيا", "إشبيلية"], correct: 1 },
+        { question: "في أي سنة تم إطلاق أول قمر صناعي (سبوتنيك)؟ 🛰️", options: ["1955", "1957", "1960", "1963"], correct: 1 },
+        { question: "أي حيوان يُعرف باسم 'ملك الغابة'؟ 🦁", options: ["النمر", "الأسد", "الفهد", "الدب"], correct: 1 },
+        { question: "كم عدد دقات قلب الإنسان الطبيعي في الدقيقة؟ 💓", options: ["50-60", "60-100", "100-120", "120-140"], correct: 1 },
+        { question: "ما هو أسرع طائر في العالم؟ 🦅", options: ["النسر", "الصقر الشاهين", "الباز", "العقاب"], correct: 1 },
+        { question: "كم عدد أيام السنة الكبيسة؟ 📅", options: ["364", "365", "366", "367"], correct: 2 },
+        { question: "أي لون هو الأكثر شيوعاً في أعلام الدول؟ 🚩", options: ["الأحمر", "الأزرق", "الأبيض", "الأخضر"], correct: 0 },
+        { question: "من هو مؤلف 'ألف ليلة وليلة'؟ 📚", options: ["مجهول", "الجاحظ", "ابن المقفع", "التوحيدي"], correct: 0 },
+        { question: "ما هي عاصمة هولندا؟ 🇳🇱", options: ["أمستردام", "لاهاي", "روتردام", "أوتريخت"], correct: 0 },
+        { question: "كم عدد الجيوب الأنفية في الإنسان؟ 👃", options: ["2", "4", "6", "8"], correct: 1 },
+        { question: "ما هو أعلى شلال في العالم؟ 🌊", options: ["نياجرا", "أنجل", "فيكتوريا", "إجوازو"], correct: 1 },
+        { question: "كم تبلغ مساحة المحيط الهادئ؟ 🌏", options: ["165 مليون كم²", "180 مليون كم²", "200 مليون كم²", "150 مليون كم²"], correct: 0 },
+        { question: "أي دولة عربية تقع في قارتي آسيا وأفريقيا؟ 🌍", options: ["مصر", "السعودية", "الأردن", "اليمن"], correct: 0 },
+        { question: "ما هو الغاز الذي يشكل النسبة الأكبر في الغلاف الجوي؟ 🌬️", options: ["أكسجين", "نيتروجين", "ثاني أكسيد الكربون", "هيدروجين"], correct: 1 },
+        { question: "من هو النبي الذي صام عن الكلام ثلاثة أيام؟ 🤐", options: ["زكريا", "يحيى", "عيسى", "موسى"], correct: 0 },
+        { question: "ما هو لون الصندوق الأسود في الطائرات؟ 📦", options: ["أسود", "برتقالي", "أحمر", "أصفر"], correct: 1 },
+        { question: "كم عدد دول العالم تقريباً؟ 🌐", options: ["180", "195", "210", "170"], correct: 1 },
+        { question: "أكبر هرم في مصر من حيث الحجم؟ 🔺", options: ["خوفو", "خفرع", "منقرع", "زوسر"], correct: 0 },
+        { question: "أي معدن يُستخرج من البوكسيت؟ ⛏️", options: ["الحديد", "النحاس", "الألمنيوم", "الرصاص"], correct: 2 },
+        { question: "ما هي عاصمة البرازيل؟ 🇧🇷", options: ["ريو دي جانيرو", "ساو باولو", "برازيليا", "سلفادور"], correct: 2 }
     ];
 
-    let peer = null, conn = null, myId = '';
-    let myScore = 0, peerScoreVal = 0;
+    // ==================== متغيرات اللعبة ====================
+    let ws;
+    let roomId;
+    let myRole = -1;        // 0=حمودي, 1=إيوته
+    let scores = [0, 0];
     let currentTurn = 0;
-    let currentQuestionIndex = 0;
+    let currentIndex = 0;
     let shuffledQuestions = [];
-    let gameStarted = false;
+    let selectedOptionIndex = null;
 
-    const myScoreEl = document.getElementById('myScore');
-    const peerScoreEl = document.getElementById('peerScore');
-    const peerArea = document.getElementById('peerArea');
+    // عناصر DOM
+    const joinArea = document.getElementById('joinArea');
     const gameArea = document.getElementById('gameArea');
-    const myPeerIdEl = document.getElementById('myPeerId');
-    const remotePeerIdInput = document.getElementById('remotePeerId');
+    const joinBtn = document.getElementById('joinBtn');
+    const roomIdInput = document.getElementById('roomIdInput');
     const statusText = document.getElementById('statusText');
-    const turnIndicator = document.getElementById('turnIndicator');
-    const questionText = document.getElementById('questionText');
-    const optionsContainer = document.getElementById('optionsContainer');
-    const feedbackMsg = document.getElementById('feedbackMsg');
+    const confirmBtn = document.getElementById('confirmBtn');
 
+    // ==================== دوال الشبكة ====================
+    function connectWebSocket() {
+        ws = new WebSocket(SERVER_URL);
+        ws.onopen = () => {
+            statusText.textContent = '✅ متصل بالخادم';
+            joinBtn.addEventListener('click', handleJoin);
+        };
+        ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            if (data.type === 'error') alert(data.message);
+            else if (data.type === 'joined') {
+                myRole = data.role;
+                joinArea.style.display = 'none';
+                gameArea.style.display = 'block';
+                updateScores();
+            }
+            else if (data.type === 'start') {
+                // المضيف يخلط الأسئلة ويرسلها
+                if (myRole === 0) {
+                    shuffledQuestions = shuffleArray([...questions]);
+                    ws.send(JSON.stringify({ type: 'state', roomId, questions: shuffledQuestions }));
+                }
+                startGame();
+            }
+            else if (data.type === 'state') {
+                shuffledQuestions = data.questions;
+                startGame();
+            }
+            else if (data.type === 'answer') {
+                scores = data.scores;
+                currentTurn = data.turn;
+                currentIndex = data.currentIndex;
+                updateScores();
+                if (currentIndex >= 100 || scores[0] >= 15 || scores[1] >= 15) {
+                    endGame();
+                } else {
+                    showQuestion();
+                }
+            }
+            else if (data.type === 'chat') {
+                addChatMessage(data.chat);
+            }
+            else if (data.type === 'reset') {
+                scores = [0, 0];
+                currentTurn = 0;
+                currentIndex = 0;
+                updateScores();
+                showQuestion();
+            }
+        };
+        ws.onerror = () => {
+            statusText.textContent = '❌ فشل الاتصال بالخادم';
+        };
+    }
+
+    function handleJoin() {
+        roomId = roomIdInput.value.trim() || generateRoomId();
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'join', roomId }));
+        }
+    }
+
+    function generateRoomId() {
+        return 'game-' + Math.random().toString(36).substr(2, 8);
+    }
+
+    // ==================== دوال اللعبة ====================
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -184,199 +372,116 @@
     }
 
     function startGame() {
-        gameStarted = true;
-        peerArea.style.display = 'none';
-        gameArea.style.display = 'block';
-        shuffledQuestions = shuffleArray([...questions]);
-        currentQuestionIndex = 0;
-        myScore = 0;
-        peerScoreVal = 0;
+        currentIndex = 0;
+        scores = [0, 0];
         updateScores();
-        if (!remotePeerIdInput.value) {
-            currentTurn = 0;
-        } else {
-            currentTurn = 1;
-        }
-        sendGameState();
-        showCurrentQuestion();
+        showQuestion();
     }
 
-    function sendGameState() {
-        if (!conn) return;
-        conn.send({
-            type: 'state',
-            myScore,
-            peerScore: peerScoreVal,
-            currentTurn,
-            currentQuestionIndex,
-            shuffledQuestions
-        });
-    }
-
-    function updateScores() {
-        myScoreEl.textContent = myScore;
-        peerScoreEl.textContent = peerScoreVal;
-    }
-
-    function showCurrentQuestion() {
-        if (currentQuestionIndex >= shuffledQuestions.length) {
-            questionText.textContent = 'انتهت الأسئلة! 🎉';
-            optionsContainer.innerHTML = '';
-            let winnerMsg = '';
-            if (myScore > peerScoreVal) winnerMsg = '🦅 حمودي هو الفائز! لكن إيوته الأجمل 😍';
-            else if (peerScoreVal > myScore) winnerMsg = '🌸 إيوته هي الفائزة! ذكية ومبدعة 💖';
-            else winnerMsg = '🤝 تعادل! أنتم الأروع معاً 💑';
-            feedbackMsg.innerHTML = `<span style="color:#ad1457; font-size:1.3rem;">${winnerMsg}</span>`;
+    function showQuestion() {
+        if (currentIndex >= shuffledQuestions.length || scores[0] >= 15 || scores[1] >= 15) {
+            endGame();
             return;
         }
-        const q = shuffledQuestions[currentQuestionIndex];
-        questionText.textContent = q.question;
-        optionsContainer.innerHTML = '';
-        const isMyTurn = (currentTurn === 0);
+        const q = shuffledQuestions[currentIndex];
+        document.getElementById('questionText').textContent = q.question;
+        const container = document.getElementById('optionsContainer');
+        container.innerHTML = '';
+        selectedOptionIndex = null;
+        const isMyTurn = (currentTurn === myRole);
         q.options.forEach((opt, i) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.textContent = opt;
             btn.disabled = !isMyTurn;
-            btn.onclick = () => handleAnswer(i);
-            optionsContainer.appendChild(btn);
+            btn.onclick = () => {
+                if (!isMyTurn) return;
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOptionIndex = i;
+            };
+            container.appendChild(btn);
         });
-        turnIndicator.textContent = isMyTurn ? '🦅 دور حمودي' : '🌸 دور إيوته';
+        confirmBtn.style.display = 'block';
+        confirmBtn.disabled = !isMyTurn;
+        document.getElementById('turnIndicator').textContent = isMyTurn ?
+            (myRole === 0 ? '🦅 دور حمودي' : '🌸 دور إيوته') :
+            (myRole === 0 ? '🌸 انتظري إيوته' : '🦅 انتظري حمودي');
     }
 
-    function handleAnswer(selectedIndex) {
-        if (currentTurn !== 0 || !gameStarted) return;
-        const q = shuffledQuestions[currentQuestionIndex];
-        const correct = (selectedIndex === q.correct);
+    function confirmAnswer() {
+        if (selectedOptionIndex === null || currentTurn !== myRole) return;
+        const q = shuffledQuestions[currentIndex];
+        const correct = (selectedOptionIndex === q.correct);
         if (correct) {
-            myScore++;
-            feedbackMsg.innerHTML = '✅ <span style="color:green">أحسنت يا حمودي! 🦅</span>';
+            scores[myRole]++;
+            document.getElementById('feedbackMsg').innerHTML = '✅ <span style="color:green">' +
+                (myRole === 0 ? 'أحسنت يا حمودي! 🦅' : 'برافو يا إيوته! 🌸') + '</span>';
         } else {
-            feedbackMsg.innerHTML = '❌ <span style="color:red">غلط يا حمودي! 😅</span>';
+            document.getElementById('feedbackMsg').innerHTML = '❌ <span style="color:red">' +
+                (myRole === 0 ? 'غلط يا حمودي! 😅' : 'غلط يا إيوته! ركزي يا عمري 😘') + '</span>';
         }
         updateScores();
-        conn.send({
-            type: 'answer',
-            correct,
-            myScore,
-            currentQuestionIndex
-        });
-        currentTurn = 1;
-        disableOptions();
-        setTimeout(() => {
-            currentQuestionIndex++;
-            showCurrentQuestion();
-            sendGameState();
-        }, 1500);
-    }
-
-    function disableOptions() {
+        // تعطيل الأزرار وإرسال الإجابة
+        confirmBtn.disabled = true;
         document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+        ws.send(JSON.stringify({
+            type: 'answer',
+            roomId,
+            correct,
+            questionIndex: currentIndex
+        }));
     }
 
-    function initPeer() {
-        peer = new Peer(undefined, {
-            host: '0.peerjs.com',
-            port: 443,
-            secure: true
-        });
-
-        peer.on('open', (id) => {
-            myId = id;
-            myPeerIdEl.textContent = id;
-            statusText.textContent = '✅ جاهز! شارك المعرف مع اللاعب الآخر.';
-        });
-
-        peer.on('connection', (incomingConn) => {
-            if (conn) { incomingConn.close(); return; }
-            conn = incomingConn;
-            setupConnection();
-            startGame();
-        });
-
-        peer.on('error', (err) => {
-            console.error(err);
-            statusText.textContent = '❌ خطأ: ' + err.message;
-        });
+    function updateScores() {
+        document.getElementById('myScore').textContent = myRole !== -1 ? scores[myRole] : 0;
+        document.getElementById('peerScore').textContent = myRole !== -1 ? scores[1 - myRole] : 0;
+        const total = scores[0] + scores[1];
+        const hostPct = total === 0 ? 50 : (scores[0] / total * 100);
+        document.getElementById('hostBar').style.width = hostPct + '%';
+        document.getElementById('guestBar').style.width = (100 - hostPct) + '%';
     }
 
-    function connectToPeer() {
-        const remoteId = remotePeerIdInput.value.trim();
-        if (!remoteId || remoteId === myId) {
-            alert('الرجاء إدخال معرف صحيح');
-            return;
-        }
-        statusText.textContent = '🔄 جاري الاتصال...';
-        conn = peer.connect(remoteId, { reliable: true });
-        setupConnection();
-    }
-
-    function setupConnection() {
-        conn.on('open', () => {
-            statusText.textContent = '✅ تم الاتصال! ابدأ التحدي 💑';
-            if (!gameStarted) startGame();
-        });
-        conn.on('data', (data) => {
-            handleIncomingData(data);
-        });
-        conn.on('close', () => {
-            statusText.textContent = 'انقطع الاتصال.';
-            gameArea.style.display = 'none';
-            peerArea.style.display = 'block';
-        });
-        conn.on('error', (err) => {
-            console.error(err);
-            statusText.textContent = '❌ خطأ في الاتصال.';
-        });
-    }
-
-    function handleIncomingData(data) {
-        if (data.type === 'state') {
-            if (!gameStarted) {
-                myScore = data.peerScore;
-                peerScoreVal = data.myScore;
-                currentTurn = data.currentTurn;
-                currentQuestionIndex = data.currentQuestionIndex;
-                shuffledQuestions = data.shuffledQuestions;
-                updateScores();
-                showCurrentQuestion();
-                gameStarted = true;
-                peerArea.style.display = 'none';
-                gameArea.style.display = 'block';
-            } else {
-                peerScoreVal = data.myScore;
-                myScore = data.peerScore;
-                updateScores();
-                showCurrentQuestion();
-            }
-        } else if (data.type === 'answer') {
-            if (data.correct) {
-                peerScoreVal++;
-                feedbackMsg.innerHTML = '✅ <span style="color:green">برافو يا إيوته! ذكية كعادتها 🌸</span>';
-            } else {
-                feedbackMsg.innerHTML = '❌ <span style="color:red">غلط يا إيوته! ركزي يا عمري 😘</span>';
-            }
-            updateScores();
-            currentQuestionIndex = data.currentQuestionIndex + 1;
-            currentTurn = 0;
-            showCurrentQuestion();
-        }
+    function endGame() {
+        const winner = scores[0] >= 15 ? 0 : scores[1] >= 15 ? 1 : -1;
+        let msg = '';
+        if (winner === 0) msg = '🦅 حمودي هو الفائز! لكن إيوته الأجمل 😍';
+        else if (winner === 1) msg = '🌸 إيوته هي الفائزة! ذكية ومبدعة 💖';
+        else msg = '🤝 تعادل! أنتم الأروع معاً 💑';
+        document.getElementById('questionText').textContent = 'انتهى التحدي!';
+        document.getElementById('optionsContainer').innerHTML = '';
+        confirmBtn.style.display = 'none';
+        document.getElementById('feedbackMsg').innerHTML = `<span style="color:#ad1457;font-size:1.3rem;">${msg}</span>`;
     }
 
     function resetGame() {
-        gameStarted = false;
-        currentQuestionIndex = 0;
-        myScore = 0;
-        peerScoreVal = 0;
-        updateScores();
-        shuffledQuestions = shuffleArray([...questions]);
-        gameArea.style.display = 'none';
-        peerArea.style.display = 'block';
-        if (conn) {
-            conn.send({ type: 'reset' });
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'reset', roomId }));
         }
     }
 
+    // ==================== الدردشة ====================
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text || myRole === -1) return;
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'chat', roomId, text, sender: myRole }));
+            input.value = '';
+        }
+    }
+
+    function addChatMessage(chatObj) {
+        const div = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        const name = chatObj.sender === 0 ? 'حمودي' : 'إيوته';
+        const color = chatObj.sender === 0 ? '#0d47a1' : '#e91e63';
+        msgDiv.innerHTML = `<strong style="color:${color}">${name}:</strong> ${chatObj.text}`;
+        div.appendChild(msgDiv);
+        div.scrollTop = div.scrollHeight;
+    }
+
+    // ==================== تأثيرات ====================
     function createHearts() {
         const container = document.getElementById('heartsContainer');
         const emojis = ['💖','💕','💗','💘','💝'];
@@ -391,8 +496,9 @@
         }
     }
 
+    // ==================== بدء التشغيل ====================
     createHearts();
-    initPeer();
+    connectWebSocket();
 </script>
 </body>
 </html>
