@@ -170,12 +170,12 @@
 </div>
 
 <script>
-    // ==================== رابط الخادم (استبدله برابط تطبيق Render الخاص بك) ====================
-    const SERVER_URL = 'wss://YOUR_RENDER_APP.onrender.com';
+    // ==================== رابط خادمك على Render ====================
+    const SERVER_URL = 'wss://gamee-beqx.onrender.com';
 
-    // ==================== 100 سؤال (سوريا + عامة) ====================
+    // ==================== 100 سؤال ====================
     const questions = [
-        // أسئلة عن سوريا (30)
+        // سوريا (30)
         { question: "ما هي عاصمة سوريا؟ 🇸🇾", options: ["دمشق", "حلب", "حمص", "اللاذقية"], correct: 0 },
         { question: "كم عدد محافظات سوريا؟ 🗺️", options: ["12", "14", "13", "15"], correct: 1 },
         { question: "أين يقع نهر الفرات في سوريا؟ 🌊", options: ["شرق", "غرب", "شمال", "جنوب"], correct: 0 },
@@ -206,7 +206,7 @@
         { question: "من هو مخترع أول أبجدية في العالم (أوغاريت)؟ 📝", options: ["السومريون", "الكنعانيون", "الآراميون", "الفينيقيون"], correct: 1 },
         { question: "ما هي المدينة السورية المشهورة بصناعة الصابون؟ 🧼", options: ["حلب", "دمشق", "حمص", "طرطوس"], correct: 0 },
         { question: "كم عدد النجوم في علم سوريا الحالي؟ ⭐", options: ["1", "2", "3", "4"], correct: 1 },
-        // أسئلة عامة (70)
+        // عامة (70)
         { question: "عاصمة اليابان؟ 🇯🇵", options: ["طوكيو", "سول", "بكين", "بانكوك"], correct: 0 },
         { question: "عدد الكواكب في المجموعة الشمسية؟ 🌌", options: ["7", "8", "9", "10"], correct: 1 },
         { question: "مكتشف الجاذبية؟ 🍎", options: ["أينشتاين", "نيوتن", "تسلا", "جاليليو"], correct: 1 },
@@ -278,17 +278,16 @@
         { question: "ما هي عاصمة البرازيل؟ 🇧🇷", options: ["ريو دي جانيرو", "ساو باولو", "برازيليا", "سلفادور"], correct: 2 }
     ];
 
-    // ==================== متغيرات اللعبة ====================
+    // ==================== متغيرات عامة ====================
     let ws;
     let roomId;
-    let myRole = -1;        // 0=حمودي, 1=إيوته
+    let myRole = -1;
     let scores = [0, 0];
     let currentTurn = 0;
     let currentIndex = 0;
     let shuffledQuestions = [];
     let selectedOptionIndex = null;
 
-    // عناصر DOM
     const joinArea = document.getElementById('joinArea');
     const gameArea = document.getElementById('gameArea');
     const joinBtn = document.getElementById('joinBtn');
@@ -296,12 +295,12 @@
     const statusText = document.getElementById('statusText');
     const confirmBtn = document.getElementById('confirmBtn');
 
-    // ==================== دوال الشبكة ====================
+    // ==================== WebSocket ====================
     function connectWebSocket() {
         ws = new WebSocket(SERVER_URL);
         ws.onopen = () => {
             statusText.textContent = '✅ متصل بالخادم';
-            joinBtn.addEventListener('click', handleJoin);
+            joinBtn.onclick = handleJoin;
         };
         ws.onmessage = (e) => {
             const data = JSON.parse(e.data);
@@ -311,33 +310,23 @@
                 joinArea.style.display = 'none';
                 gameArea.style.display = 'block';
                 updateScores();
-            }
-            else if (data.type === 'start') {
-                // المضيف يخلط الأسئلة ويرسلها
+            } else if (data.type === 'start') {
                 if (myRole === 0) {
                     shuffledQuestions = shuffleArray([...questions]);
                     ws.send(JSON.stringify({ type: 'state', roomId, questions: shuffledQuestions }));
                 }
                 startGame();
-            }
-            else if (data.type === 'state') {
+            } else if (data.type === 'state') {
                 shuffledQuestions = data.questions;
                 startGame();
-            }
-            else if (data.type === 'answer') {
+            } else if (data.type === 'answer') {
                 scores = data.scores;
                 currentTurn = data.turn;
                 currentIndex = data.currentIndex;
                 updateScores();
-                if (currentIndex >= 100 || scores[0] >= 15 || scores[1] >= 15) {
-                    endGame();
-                } else {
-                    showQuestion();
-                }
-            }
-            else if (data.type === 'chat') {
-                addChatMessage(data.chat);
-            }
+                if (currentIndex >= 100 || scores[0] >= 15 || scores[1] >= 15) endGame();
+                else showQuestion();
+            } else if (data.type === 'chat') addChatMessage(data.chat);
             else if (data.type === 'reset') {
                 scores = [0, 0];
                 currentTurn = 0;
@@ -346,43 +335,20 @@
                 showQuestion();
             }
         };
-        ws.onerror = () => {
-            statusText.textContent = '❌ فشل الاتصال بالخادم';
-        };
+        ws.onerror = () => statusText.textContent = '❌ فشل الاتصال بالخادم';
     }
 
     function handleJoin() {
         roomId = roomIdInput.value.trim() || generateRoomId();
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'join', roomId }));
-        }
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'join', roomId }));
     }
+    function generateRoomId() { return 'game-' + Math.random().toString(36).substr(2, 8); }
 
-    function generateRoomId() {
-        return 'game-' + Math.random().toString(36).substr(2, 8);
-    }
-
-    // ==================== دوال اللعبة ====================
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    function startGame() {
-        currentIndex = 0;
-        scores = [0, 0];
-        updateScores();
-        showQuestion();
-    }
-
+    // ==================== اللعبة ====================
+    function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+    function startGame() { currentIndex = 0; scores = [0, 0]; updateScores(); showQuestion(); }
     function showQuestion() {
-        if (currentIndex >= shuffledQuestions.length || scores[0] >= 15 || scores[1] >= 15) {
-            endGame();
-            return;
-        }
+        if (currentIndex >= shuffledQuestions.length || scores[0] >= 15 || scores[1] >= 15) { endGame(); return; }
         const q = shuffledQuestions[currentIndex];
         document.getElementById('questionText').textContent = q.question;
         const container = document.getElementById('optionsContainer');
@@ -394,109 +360,73 @@
             btn.className = 'option-btn';
             btn.textContent = opt;
             btn.disabled = !isMyTurn;
-            btn.onclick = () => {
-                if (!isMyTurn) return;
-                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                selectedOptionIndex = i;
-            };
+            btn.onclick = () => { if (!isMyTurn) return; document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); selectedOptionIndex = i; };
             container.appendChild(btn);
         });
         confirmBtn.style.display = 'block';
         confirmBtn.disabled = !isMyTurn;
-        document.getElementById('turnIndicator').textContent = isMyTurn ?
-            (myRole === 0 ? '🦅 دور حمودي' : '🌸 دور إيوته') :
-            (myRole === 0 ? '🌸 انتظري إيوته' : '🦅 انتظري حمودي');
+        document.getElementById('turnIndicator').textContent = isMyTurn ? (myRole === 0 ? '🦅 دور حمودي' : '🌸 دور إيوته') : (myRole === 0 ? '🌸 انتظري إيوته' : '🦅 انتظري حمودي');
     }
 
     function confirmAnswer() {
         if (selectedOptionIndex === null || currentTurn !== myRole) return;
         const q = shuffledQuestions[currentIndex];
         const correct = (selectedOptionIndex === q.correct);
-        if (correct) {
-            scores[myRole]++;
-            document.getElementById('feedbackMsg').innerHTML = '✅ <span style="color:green">' +
-                (myRole === 0 ? 'أحسنت يا حمودي! 🦅' : 'برافو يا إيوته! 🌸') + '</span>';
-        } else {
-            document.getElementById('feedbackMsg').innerHTML = '❌ <span style="color:red">' +
-                (myRole === 0 ? 'غلط يا حمودي! 😅' : 'غلط يا إيوته! ركزي يا عمري 😘') + '</span>';
-        }
+        if (correct) { scores[myRole]++; document.getElementById('feedbackMsg').innerHTML = '✅ ' + (myRole === 0 ? 'أحسنت يا حمودي!' : 'برافو يا إيوته!'); }
+        else { document.getElementById('feedbackMsg').innerHTML = '❌ ' + (myRole === 0 ? 'غلط يا حمودي!' : 'غلط يا إيوته!'); }
         updateScores();
-        // تعطيل الأزرار وإرسال الإجابة
         confirmBtn.disabled = true;
         document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-        ws.send(JSON.stringify({
-            type: 'answer',
-            roomId,
-            correct,
-            questionIndex: currentIndex
-        }));
+        ws.send(JSON.stringify({ type: 'answer', roomId, correct, questionIndex: currentIndex }));
     }
 
     function updateScores() {
         document.getElementById('myScore').textContent = myRole !== -1 ? scores[myRole] : 0;
-        document.getElementById('peerScore').textContent = myRole !== -1 ? scores[1 - myRole] : 0;
+        document.getElementById('peerScore').textContent = myRole !== -1 ? scores[1-myRole] : 0;
         const total = scores[0] + scores[1];
-        const hostPct = total === 0 ? 50 : (scores[0] / total * 100);
-        document.getElementById('hostBar').style.width = hostPct + '%';
-        document.getElementById('guestBar').style.width = (100 - hostPct) + '%';
+        document.getElementById('hostBar').style.width = (total === 0 ? 50 : scores[0]/total*100) + '%';
+        document.getElementById('guestBar').style.width = (total === 0 ? 50 : scores[1]/total*100) + '%';
     }
 
     function endGame() {
         const winner = scores[0] >= 15 ? 0 : scores[1] >= 15 ? 1 : -1;
-        let msg = '';
-        if (winner === 0) msg = '🦅 حمودي هو الفائز! لكن إيوته الأجمل 😍';
-        else if (winner === 1) msg = '🌸 إيوته هي الفائزة! ذكية ومبدعة 💖';
-        else msg = '🤝 تعادل! أنتم الأروع معاً 💑';
+        let msg = winner === 0 ? '🦅 حمودي هو الفائز!' : winner === 1 ? '🌸 إيوته هي الفائزة!' : '🤝 تعادل!';
         document.getElementById('questionText').textContent = 'انتهى التحدي!';
         document.getElementById('optionsContainer').innerHTML = '';
         confirmBtn.style.display = 'none';
-        document.getElementById('feedbackMsg').innerHTML = `<span style="color:#ad1457;font-size:1.3rem;">${msg}</span>`;
+        document.getElementById('feedbackMsg').innerHTML = msg;
     }
 
-    function resetGame() {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'reset', roomId }));
-        }
-    }
+    function resetGame() { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'reset', roomId })); }
 
     // ==================== الدردشة ====================
     function sendChat() {
         const input = document.getElementById('chatInput');
         const text = input.value.trim();
-        if (!text || myRole === -1) return;
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'chat', roomId, text, sender: myRole }));
-            input.value = '';
-        }
+        if (text && myRole !== -1) ws.send(JSON.stringify({ type: 'chat', roomId, text, sender: myRole }));
+        input.value = '';
     }
-
     function addChatMessage(chatObj) {
         const div = document.getElementById('chatMessages');
-        const msgDiv = document.createElement('div');
-        const name = chatObj.sender === 0 ? 'حمودي' : 'إيوته';
-        const color = chatObj.sender === 0 ? '#0d47a1' : '#e91e63';
-        msgDiv.innerHTML = `<strong style="color:${color}">${name}:</strong> ${chatObj.text}`;
-        div.appendChild(msgDiv);
+        div.innerHTML += `<div><strong style="color:${chatObj.sender===0?'#0d47a1':'#e91e63'}">${chatObj.sender===0?'حمودي':'إيوته'}:</strong> ${chatObj.text}</div>`;
         div.scrollTop = div.scrollHeight;
     }
 
-    // ==================== تأثيرات ====================
+    // ==================== قلوب ====================
     function createHearts() {
         const container = document.getElementById('heartsContainer');
         const emojis = ['💖','💕','💗','💘','💝'];
         for (let i = 0; i < 15; i++) {
             const heart = document.createElement('span');
             heart.className = 'heart';
-            heart.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
-            heart.style.left = Math.random() * 100 + '%';
-            heart.style.animationDelay = Math.random() * 4 + 's';
-            heart.style.animationDuration = Math.random() * 3 + 3 + 's';
+            heart.innerHTML = emojis[Math.floor(Math.random()*emojis.length)];
+            heart.style.left = Math.random()*100+'%';
+            heart.style.animationDelay = Math.random()*4+'s';
+            heart.style.animationDuration = Math.random()*3+3+'s';
             container.appendChild(heart);
         }
     }
 
-    // ==================== بدء التشغيل ====================
     createHearts();
     connectWebSocket();
 </script>
